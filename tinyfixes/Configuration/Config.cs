@@ -15,11 +15,15 @@ namespace tinyfixes.Configuration
         */
 
 		[DisplayName("Subs Fix")]
-		[Description("Enable subtitle fix.")]
+		[Description("Apply subtitle fixes.")]
 		public bool SubsFix { get; set; } = true;
 		
-		[Description("Enable NG+ save slot fix.")]
+		[Description("Apply NG+ save slot fix.")]
 		[DisplayName("Slot Fix")]
 		public bool SlotFix { get; set; } = true;
+
+		[Description("Apply TexWrap fix.")]
+		[DisplayName("TexWrap Fix")]
+		public bool TexWrapFix { get; set; } = true;
 	}
 }

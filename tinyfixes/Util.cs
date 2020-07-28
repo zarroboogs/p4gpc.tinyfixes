@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Reloaded.Memory.Sigscan;
+using Reloaded.Memory.Sigscan.Structs;
 
 namespace tinyfixes
 {
@@ -43,6 +47,24 @@ namespace tinyfixes
             }
 
             return ptr;
+        }
+
+        internal static List<PatternScanResult> FindAllPatterns(Process proc, string pattern)
+        {
+            using var scanner = new Scanner(proc, proc.MainModule);
+            var results = new List<PatternScanResult>();
+            var result = new PatternScanResult(-1);
+            var scanPattern = new CompiledScanPattern(pattern);
+
+            do
+            {
+                result = scanner.CompiledFindPattern(scanPattern, result.Offset + 1);
+                if (result.Found)
+                    results.Add(result);
+            }
+            while (result.Found);
+
+            return results;
         }
     }
 }

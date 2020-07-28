@@ -43,17 +43,20 @@ namespace tinyfixes
 
         public void Apply()
         {
-            var scan = new Scanner(mProc, mProc.MainModule);
-
             if (mConfig.SlotFix)
-                PatchSlot(scan);
+                PatchSlot();
 
             if (mConfig.SubsFix)
-                PatchSubs(scan);
+                PatchSubs();
+
+            if (mConfig.TexWrapFix)
+                PatchTexWrap();
         }
 
-        private void PatchSubs(Scanner scan)
+        private void PatchSubs()
         {
+            using var scan = new Scanner(mProc, mProc.MainModule);
+
             mLogger.WriteLine("[tinyfixes] <SubsFix> Patching subtitles...");
 
             foreach (var s in mSubs)
@@ -75,8 +78,10 @@ namespace tinyfixes
             }
         }
 
-        private void PatchSlot(Scanner scan)
+        private void PatchSlot()
         {
+            using var scan = new Scanner(mProc, mProc.MainModule);
+
             mLogger.WriteLine("[tinyfixes] <SlotFix> Patching save slots...");
 
             var resPush = scan.CompiledFindPattern("8d 95 f8 fd ff ff 8b ce 6a 06");
@@ -107,6 +112,35 @@ namespace tinyfixes
 
                 Util.WriteProcessMemory(mHnd, ppTClr, pLang, pLang.Length, out _);
                 Util.WriteProcessMemory(mHnd, ppLang, pTClr, pTClr.Length, out _);
+            }
+        }
+
+        private void PatchTexWrap()
+        {
+            mLogger.WriteLine("[tinyfixes] <TexWrapFix> Patching TexWrap...");
+
+            // 81 4f 24 00 c0 00 00 -- parse gmo TexWrap -- 1
+            // f7 40 24 00 c0 00 00 -- apply gmo TexWrap (draw) -- 2
+
+            var resDraw = Util.FindAllPatterns(mProc, "f7 40 24 00 c0 00 00");
+
+            if (resDraw.Count == 0)
+            {
+                mLogger.WriteLine("[tinyfixes] <TexWrapFix> Pattern not found, maybe already patched?");
+                return;
+            }
+            else if (resDraw.Count != 2)
+            {
+                mLogger.WriteLine("[tinyfixes] <TexWrapFix> Too many results, skipping...");
+                return;
+            }
+
+            foreach (var res in resDraw)
+            {
+                mLogger.WriteLine("[tinyfixes] <TexWrapFix> Pattern found, patching...");
+                Util.WriteProcessMemory(mHnd, mBaseAddr + res.Offset + 20, new byte[] { 0x75 }, 1, out _);
+                Util.WriteProcessMemory(mHnd, mBaseAddr + res.Offset + 25, new byte[] { 0x90, 0x90 }, 2, out _);
+                Util.WriteProcessMemory(mHnd, mBaseAddr + res.Offset + 32, new byte[] { 0x75 }, 1, out _);
             }
         }
     }
