@@ -37,18 +37,28 @@ This fix should work for all versions of the game (Japanese, English, Korean and
 
 Adjusts some English subtitles to fix cutoff issues with the **in-game** versions of some movies (these issues don't occur in the *TV Listings* section due to different subtitle scaling).
 
+<details>
+    <summary>Preview (click to expand)</summary>
+
 | Original           | Fixed                  |
 |:------------------:|:----------------------:|
 | ![x](img/sub1.png) | ![x](img/sub1-fix.png) |
 | ![x](img/sub2.png) | ![x](img/sub2-fix.png) |
+
+</details>
 
 ### TexWrap Fix
 
 Fixes an issue with the way some repeating textures (`GmoTexWrap`) are applied to surfaces.
 Note that this fix hasn't been thoroughly tested and was mainly meant to fix the texture bug in the scene pictured below.
 
+<details>
+    <summary>Preview (click to expand)</summary>
+
 | Original               | Fixed                      |
 |:----------------------:|:--------------------------:|
 | ![x](img/texwrap1.png) | ![x](img/texwrap1-fix.png) |
 | ![x](img/texwrap2.png) | ![x](img/texwrap2-fix.png) |
 | ![x](img/texwrap3.png) | ![x](img/texwrap3-fix.png) |
+
+</details>
