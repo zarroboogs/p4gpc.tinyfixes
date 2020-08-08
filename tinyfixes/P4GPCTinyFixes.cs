@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using Reloaded.Memory.Sigscan;
+using Reloaded.Memory.Sigscan.Structs;
 using Reloaded.Mod.Interfaces;
 using tinyfixes.Configuration;
 
@@ -43,6 +44,9 @@ namespace tinyfixes
 
         public void Apply()
         {
+            if (mConfig.IntroSkip)
+                PatchIntro();
+
             if (mConfig.SlotFix)
                 PatchSlot();
 
@@ -55,37 +59,44 @@ namespace tinyfixes
 
         private void PatchSubs()
         {
+            mLogger.WriteLine("[tinyfixes] <SubsFix> Patching subtitles...");
+
             using var scan = new Scanner(mProc, mProc.MainModule);
 
-            mLogger.WriteLine("[tinyfixes] <SubsFix> Patching subtitles...");
+            var start = 0;
 
             foreach (var s in mSubs)
             {
                 var pattern = BitConverter.ToString(Encoding.ASCII.GetBytes(s.Pattern)).Replace("-", " ");
-                var scanResult = scan.CompiledFindPattern(pattern);
+                var compSub = new CompiledScanPattern(pattern);
+                var resSub = scan.CompiledFindPattern(compSub, start);
 
-                if (!scanResult.Found)
+                if (!resSub.Found)
                 {
                     mLogger.WriteLine($"[tinyfixes] <SubsFix> Pattern #{s.Id} not found, maybe already patched?");
                     continue;
                 }
 
+                start = resSub.Offset;
+
                 mLogger.WriteLine($"[tinyfixes] <SubsFix> Pattern #{s.Id} found, patching...");
                 byte[] buff = Encoding.ASCII.GetBytes(s.Replace);
 
-                Util.VirtualProtectEx(mHnd, mBaseAddr + scanResult.Offset, (UIntPtr)buff.Length, 0x04, out _);
-                Util.WriteProcessMemory(mHnd, mBaseAddr + scanResult.Offset, buff, buff.Length, out _);
+                Util.VirtualProtectEx(mHnd, mBaseAddr + resSub.Offset, (UIntPtr)buff.Length, 0x04, out _);
+                Util.WriteProcessMemory(mHnd, mBaseAddr + resSub.Offset, buff, buff.Length, out _);
             }
         }
 
         private void PatchSlot()
         {
-            using var scan = new Scanner(mProc, mProc.MainModule);
-
             mLogger.WriteLine("[tinyfixes] <SlotFix> Patching save slots...");
 
-            var resPush = scan.CompiledFindPattern("8d 95 f8 fd ff ff 8b ce 6a 06");
-            var resTable = scan.CompiledFindPattern("8b 04 b5 ?? ?? ?? ?? ff 30 57 ff d3");
+            using var scan = new Scanner(mProc, mProc.MainModule);
+
+            var compPush = new CompiledScanPattern("8d 95 f8 fd ff ff 8b ce 6a 06");
+            var compTable = new CompiledScanPattern("8b 04 b5 ?? ?? ?? ?? ff 30 57 ff d3");
+            var resPush = scan.CompiledFindPattern(compPush, 0);
+            var resTable = scan.CompiledFindPattern(compTable, 0);
             
             if (!resPush.Found || !resTable.Found)
             {
@@ -122,7 +133,7 @@ namespace tinyfixes
             // 81 4f 24 00 c0 00 00 -- parse gmo TexWrap -- 1
             // f7 40 24 00 c0 00 00 -- apply gmo TexWrap (draw) -- 2
 
-            var resDraw = Util.FindAllPatterns(mProc, "f7 40 24 00 c0 00 00");
+            var resDraw = Util.FindAllPatterns(mProc, "f7 40 24 00 c0 00 00", 2);
 
             if (resDraw.Count == 0)
             {
@@ -142,6 +153,26 @@ namespace tinyfixes
                 Util.WriteProcessMemory(mHnd, mBaseAddr + res.Offset + 25, new byte[] { 0x90, 0x90 }, 2, out _);
                 Util.WriteProcessMemory(mHnd, mBaseAddr + res.Offset + 32, new byte[] { 0x75 }, 1, out _);
             }
+        }
+
+        private void PatchIntro()
+        {
+            mLogger.WriteLine("[tinyfixes] <IntroSkip> Patching intro...");
+
+            using var scan = new Scanner(mProc, mProc.MainModule);
+
+            var compIntro = new CompiledScanPattern("5e 5b 5d c3 b9 01 00 00 00");
+            var resIntro = scan.CompiledFindPattern(compIntro, 0);
+
+            if (!resIntro.Found)
+            {
+                mLogger.WriteLine("[tinyfixes] <IntroSkip> Pattern not found, maybe already patched?");
+                return;
+            }
+
+            mLogger.WriteLine("[tinyfixes] <IntroSkip> Pattern found, patching...");
+
+            Util.WriteProcessMemory(mHnd, mBaseAddr + resIntro.Offset + 4, new byte[] { 0xe9, 0x30 }, 2, out _);
         }
     }
 }

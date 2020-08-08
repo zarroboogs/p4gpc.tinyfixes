@@ -23,6 +23,11 @@ Various tiny fixes for Persona 4 Golden (Steam).
 
 ## Included Fixes
 
+### Intro Skip
+
+Skips the boot logos and intro movie and boots directly to the main menu.
+This "fix" is disabled by default and can be enabled via the Reloaded II *Configure Mod* button.
+
 ### NG+ Save Slot Fix
 
 Fixes a bug which causes Clear Data and New Game+ saves to appear incorrectly in menus.

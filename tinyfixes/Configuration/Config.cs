@@ -14,16 +14,20 @@ namespace tinyfixes.Configuration
             Need more config files/classes? See Configuration.cs
         */
 
+		[DisplayName("Intro Skip")]
+		[Description("Skip intro movie.")]
+		public bool IntroSkip { get; set; } = false;
+
+		[DisplayName("Slot Fix")]
+		[Description("Apply NG+ save slot fix.")]
+		public bool SlotFix { get; set; } = true;
+
 		[DisplayName("Subs Fix")]
 		[Description("Apply subtitle fixes.")]
 		public bool SubsFix { get; set; } = true;
-		
-		[Description("Apply NG+ save slot fix.")]
-		[DisplayName("Slot Fix")]
-		public bool SlotFix { get; set; } = true;
 
-		[Description("Apply TexWrap fix.")]
 		[DisplayName("TexWrap Fix")]
+		[Description("Apply TexWrap fix.")]
 		public bool TexWrapFix { get; set; } = true;
-	}
+    }
 }
