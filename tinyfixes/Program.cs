@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using Reloaded.Hooks.ReloadedII.Interfaces;
 using Reloaded.Mod.Interfaces;
 using Reloaded.Mod.Interfaces.Internal;
@@ -55,12 +54,8 @@ namespace tinyfixes
 			_configuration = configurator.GetConfiguration<Config>(0);
 			_configuration.ConfigurationUpdated += OnConfigurationUpdated;
 
-#if DEBUG
-			Debugger.Launch();
-#endif
-
 			/* Your mod code starts here. */
-			_P4GPCTinyFixes = new P4GPCTinyFixes(_logger, _configuration);
+			_P4GPCTinyFixes = new P4GPCTinyFixes( _logger, _configuration );
 			_P4GPCTinyFixes.Apply();
 		}
 
