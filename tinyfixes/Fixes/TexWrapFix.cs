@@ -16,7 +16,7 @@ namespace tinyfixes.Fixes
             // 81 4f 24 00 c0 00 00 -- parse gmo TexWrap -- 1
             // f7 40 24 00 c0 00 00 -- apply gmo TexWrap (draw) -- 2
 
-            var scanner = new Scanner(mProc, mProc.MainModule);
+            using var scanner = new Scanner(mProc, mProc.MainModule);
             var resDraw = scanner.FindAllPatterns("f7 40 24 00 c0 00 00", 2);
 
             if (resDraw.Count == 0)
