@@ -12,20 +12,22 @@ namespace tinyfixes.Fixes
         public bool Enabled { get; } = false;
 
         protected readonly LevelLogger mLogger;
-        protected readonly IMemory mMem;
 
-        protected readonly Process mProc;
-        protected readonly IntPtr mBaseAddr;
+        protected static readonly IMemory mMem;
+        protected static readonly Process mProc;
+        protected static readonly IntPtr mBaseAddr;
+
+        static Fix()
+        {
+            mProc = Process.GetCurrentProcess();
+            mBaseAddr = mProc.MainModule.BaseAddress;
+            mMem = new Memory();
+        }
 
         public Fix(ILogger logger, bool enabled)
         {
             Enabled = enabled;
             mLogger = new LevelLogger(logger, Name);
-
-            mProc = Process.GetCurrentProcess();
-            mBaseAddr = mProc.MainModule.BaseAddress;
-            
-            mMem = new ExternalMemory(mProc.Handle);
         }
 
         public void Apply()
