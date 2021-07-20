@@ -55,8 +55,8 @@ namespace tinyfixes
 			_configuration.ConfigurationUpdated += OnConfigurationUpdated;
 
 			/* Your mod code starts here. */
-			_P4GPCTinyFixes = new P4GPCTinyFixes( _logger, _configuration );
-			_P4GPCTinyFixes.Apply();
+			_P4GPCTinyFixes = new P4GPCTinyFixes(_logger, _configuration);
+			_P4GPCTinyFixes.Activate(_configuration);
 		}
 
 		private void OnConfigurationUpdated(IConfigurable obj)
@@ -72,6 +72,7 @@ namespace tinyfixes
 
 			// Apply settings from configuration.
 			// ... your code here.
+			_P4GPCTinyFixes.Activate(_configuration);
 		}
 
 		/* Mod loader actions. */
@@ -82,6 +83,8 @@ namespace tinyfixes
                 A. Undo memory modifications.
                 B. Deactivate hooks. (Reloaded.Hooks Supports This!)
             */
+
+			_P4GPCTinyFixes.Deactivate();
 		}
 
 		public void Resume()
@@ -91,6 +94,8 @@ namespace tinyfixes
                 A. Redo memory modifications.
                 B. Re-activate hooks. (Reloaded.Hooks Supports This!)
             */
+
+			_P4GPCTinyFixes.Activate();
 		}
 
 		public void Unload()
@@ -100,13 +105,15 @@ namespace tinyfixes
                 A. Execute Suspend(). [Suspend should be reusable in this method]
                 B. Release any unmanaged resources, e.g. Native memory.
             */
+
+			Suspend();
 		}
 
 		/*  If CanSuspend == false, suspend and resume button are disabled in Launcher and Suspend()/Resume() will never be called.
             If CanUnload == false, unload button is disabled in Launcher and Unload() will never be called.
         */
-		public bool CanUnload() => false;
-		public bool CanSuspend() => false;
+		public bool CanUnload() => true;
+		public bool CanSuspend() => true;
 
 		/* Automatically called by the mod loader when the mod is about to be unloaded. */
 		public Action Disposing { get; }

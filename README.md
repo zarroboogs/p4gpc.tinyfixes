@@ -21,12 +21,19 @@ Various tiny fixes for Persona 4 Golden (Steam).
 6. Select *Launch Application* to start the game and load the mod.
 7. Optionally, select *Create Shortcut* to create a desktop shortcut that will launch the game via Reloaded II automatically.
 
-## Included Fixes
+## Included Patches
 
 ### Intro Skip
 
 Skips the boot logos and intro movie and boots directly to the main menu.
-This "fix" is disabled by default and can be enabled via the Reloaded II *Configure Mod* button.
+Disabled by default - can be enabled via the Reloaded II *Configure Mod* button.
+
+### P4 Title Movie
+
+Enable to play the vanilla P4 title movie on boot.
+Disabled by default - can be enabled via the Reloaded II *Configure Mod* button.
+
+## Included Fixes
 
 ### NG+ Save Slot Fix
 

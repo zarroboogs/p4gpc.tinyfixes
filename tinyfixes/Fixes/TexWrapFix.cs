@@ -1,5 +1,4 @@
 ﻿using Reloaded.Memory.Sigscan;
-using Reloaded.Memory.Sources;
 using Reloaded.Mod.Interfaces;
 using tinyfixes.Utilities;
 
@@ -9,35 +8,31 @@ namespace tinyfixes.Fixes
     {
         public override string Name => "tinyfixes | TexWrapFix";
 
-        public TexWrapFix(ILogger logger, bool enabled) : base(logger, enabled) { }
+        public TexWrapFix(ILogger logger) : base(logger) { }
 
-        protected override void OnApply()
+        protected override void Init()
         {
-            // 81 4f 24 00 c0 00 00 -- parse gmo TexWrap -- 1
-            // f7 40 24 00 c0 00 00 -- apply gmo TexWrap (draw) -- 2
+            // 81 4F 24 00 C0 00 00 -- parse gmo TexWrap -- 1
+            // F7 40 24 00 C0 00 00 -- apply gmo TexWrap (draw) -- 2
 
-            using var scanner = new Scanner(mProc, mProc.MainModule);
-            var resDraw = scanner.FindAllPatterns("f7 40 24 00 c0 00 00", 2);
+            using var scan = new Scanner(sProc, sProc.MainModule);
+            var res = scan.FindAllPatterns("F7 40 24 00 C0 00 00", 2);
 
-            if (resDraw.Count == 0)
+            if (res.Count != 2)
             {
-                mLogger.Warning("Pattern not found, maybe already patched?");
-                return;
-            }
-            else if (resDraw.Count != 2)
-            {
-                mLogger.Warning("Pattern count mismatch, skipping...");
+                InitFailed = true;
                 return;
             }
 
-            foreach (var res in resDraw)
+            foreach (var r in res)
             {
-                mLogger.Info("Pattern found, patching...");
-                mMem.SafeWrite<byte>(mBaseAddr + res.Offset + 20, 0x75 );
-                mMem.SafeWrite<ushort>(mBaseAddr + res.Offset + 25, 0x9090 );
-                mMem.SafeWrite<byte>(mBaseAddr + res.Offset + 32, 0x75 );
+                mLogger.Info("Adding patch...");
+                mPatch.Add(sBaseAddr + r.Offset + 20, "75");
+                mPatch.Add(sBaseAddr + r.Offset + 25, "90 90");
+                mPatch.Add(sBaseAddr + r.Offset + 32, "75");
             }
+
+            InitDone = true;
         }
     }
-
 }

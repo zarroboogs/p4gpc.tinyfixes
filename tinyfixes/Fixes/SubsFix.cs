@@ -1,9 +1,6 @@
-﻿using System;
-using System.Text;
-using Reloaded.Memory.Sigscan;
-using Reloaded.Memory.Sigscan.Structs;
-using Reloaded.Memory.Sources;
+﻿using Reloaded.Memory.Sigscan;
 using Reloaded.Mod.Interfaces;
+using tinyfixes.Utilities;
 
 namespace tinyfixes.Fixes
 {
@@ -16,31 +13,29 @@ namespace tinyfixes.Fixes
             (2, "we've been through", "we've been\nthrough"),
         };
 
-        public SubsFix(ILogger logger, bool enabled) : base(logger, enabled) { }
+        public SubsFix(ILogger logger) : base(logger) { }
 
-        protected override void OnApply()
+        protected override void Init()
         {
-            using var scan = new Scanner(mProc, mProc.MainModule);
+            using var scan = new Scanner(sProc, sProc.MainModule);
             var start = 0;
 
             foreach (var (Id, Pattern, Replace) in mSubs)
             {
-                var pattern = BitConverter.ToString(Encoding.ASCII.GetBytes(Pattern)).Replace("-", " ");
-                var resSub = scan.CompiledFindPattern(new CompiledScanPattern(pattern), start);
+                var res = scan.CompiledFindPattern(Pattern.ToHexString(), start);
 
-                if (!resSub.Found)
+                if (!res.Found)
                 {
-                    mLogger.Warning($"Pattern #{Id} not found, maybe already patched?");
-                    continue;
+                    InitFailed = true;
+                    return;
                 }
 
-                start = resSub.Offset;
-
-                mLogger.Info($"Pattern #{Id} found, patching...");
-
-                var buff = Encoding.ASCII.GetBytes(Replace);
-                mMem.SafeWriteRaw(mBaseAddr + resSub.Offset, buff);
+                start = res.Offset;
+                mLogger.Info($"Adding patch - pattern #{Id}...");
+                mPatch.Add(sBaseAddr + res.Offset, Replace.ToHexString());
             }
+
+            InitDone = true;
         }
     }
 }
